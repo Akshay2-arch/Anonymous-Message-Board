@@ -18,7 +18,15 @@ module.exports = function (app, db, ObjectId) {
         const now = new Date();
         const doc = { text, delete_password, created_on: now, bumped_on: now, reported: false, replies: [] };
         const result = await col(board).insertOne(doc);
-        return res.json({ _id: result.insertedId, text: doc.text, created_on: doc.created_on, bumped_on: doc.bumped_on, replies: [] });
+        return res.json({
+          _id: result.insertedId,
+          text: doc.text,
+          created_on: doc.created_on,
+          bumped_on: doc.bumped_on,
+          reported: doc.reported,
+          delete_password: doc.delete_password,
+          replies: doc.replies
+        });
       } catch(err){ res.status(500).send('server error'); }
     })
     .get(async (req,res)=>{
@@ -78,7 +86,21 @@ module.exports = function (app, db, ObjectId) {
           { returnDocument: 'after' }
         );
         if(!update.value) return res.status(404).send('thread not found');
-        return res.json({ _id: update.value._id, replies: update.value.replies.map(r=>({ _id: r._id, text: r.text, created_on: r.created_on })) });
+        return res.json({
+          _id: update.value._id,
+          text: update.value.text,
+          created_on: update.value.created_on,
+          bumped_on: update.value.bumped_on,
+          reported: update.value.reported,
+          delete_password: update.value.delete_password,
+          replies: update.value.replies.map(r=>({
+            _id: r._id,
+            text: r.text,
+            created_on: r.created_on,
+            delete_password: r.delete_password,
+            reported: r.reported
+          }))
+        });
       } catch(err){ res.status(500).send('server error'); }
     })
     .get(async (req,res)=>{
